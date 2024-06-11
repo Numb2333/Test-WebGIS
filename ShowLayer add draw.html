@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Document</title>
+    <link rel="stylesheet" href="ol/css/ol.css">
+    <script src="ol/build/ol.js"></script>
+    <style>
+        .map{
+            height:800px;
+            width: 100%;
+        }
+    </style>
+    <style>
+        .mouse-position-wrapper{
+            width: 300px;
+            height: 39px;
+            color: black;
+            position: absolute;
+            right: 20px;
+            bottom: 6px;
+            z-index: 999;
+        }
+    </style>
+    <style>
+        .ol-scale-line{
+            left:100px;
+        }
+    </style>
+    <style>
+        .controls{
+            position:fixed;
+            width: 10px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <input type="checkbox" id="XYZ" checked/>Realtime
+        <input type="checkbox" id="arcgisonline"/>arcgisonline
+        <input type="checkbox" id="Bing"/>BingMap
+    </div>
+    <div id="map" class="map"></div>
+
+    <div id="mouse-position" class="mouse-position-wrapper">
+        <div class="custom-mouse-position"></div>
+    </div>
+
+    <script>
+        let  polygonFeature=new ol.Feature({
+            //geometry: new ol.geom.Polygon([[[11801814, 3251012], [14057391, 2748303], [12714628, 1346008], [11801814, 3251012]]]),
+            //geometry: new ol.geom.Polygon([[[13049872, 2663018], [13058110, 2666757], [13061672, 2662053],[13057887,2658677],[13049872, 2663018]]],[[[13026495, 2651323], [13034287, 2651323], [13034287, 2645058],[13021263,2645058],[13026495, 2651323]]]),
+            //geometry: new ol.geom.Polygon([[[13026495.4931, 2651323.8148], [13034287.8575, 2651323.8148], [13034287.8575, 2645058.1134],[13021263.4771,2645058.1134],[13026495.4931, 2651323.8148]]]),
+            name: '多边形要素'
+        });
+        let vectorSource=new ol.source.Vector();
+        vectorSource.addFeature(polygonFeature);
+        let vectorLayer=new ol.layer.Vector({
+            source:vectorSource
+        });
+        var map=new ol.Map({
+            target:'map',
+            layers:[
+                new ol.layer.Tile({
+                    source: new ol.source.XYZ({
+                        url:"http://rt{0-3}.map.gtimg.com/realtimerender?z={z}&x={x}&y={-y}&type=vector&style=0"
+                    }),
+                    visible:true
+                }),
+                new ol.layer.Tile({
+                    source:new ol.source.XYZ({
+                        url:"https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"//arcGIS online提供的瓦片地图服务
+                    }),
+                    visible:false
+                }),
+                new ol.layer.Tile({
+                    source:new ol.source.BingMaps({
+                        key:'AkjzA7OhS4MIBjutL21bkAop7dc41HSE0CNTR5c6HJy8JKc7U9U9RveWJrylD3XJ',
+                        imagerySet:'Road'
+                    }),
+                    visible:false,
+                
+                }),
+                new ol.layer.Vector({
+                    source:vectorSource
+                }),
+                new ol.layer.Vector({
+                    source:new ol.source.Vector({
+                        url:'data/cs珠三角.json',
+                        projection: 'EPSG:3857',
+                        format: new ol.format.GeoJSON()
+                    }),
+                
+                    style:[
+                        new ol.style.Style({
+                            fill: new ol.style.Fill({
+                                color:"rgb(250 0 0)",  
+                            })
+                        }),
+                    ]
+                })
+                /*加载在线json
+                new ol.layer.Vector({
+                    source: new ol.source.Vector({
+                        //url:'https://geo.datav.aliyun.com/areas_v3/bound/440000_full.json',//加载广东省行政边界，json数据来源于在线地图转化
+                        //url:'https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json',//加载中国行政边界
+                    }),*/
+                
+            ],
+            view: new ol.View({
+                center:[0,0],
+                zoom:2
+            }),
+            controls: ol.control.defaults().extend([
+                new ol.control.FullScreen(),
+                new ol.control.MousePosition({
+                    className:'custom-mouse-position',
+                    target:document.getElementById('mouse-position')
+                }),
+                new ol.control.OverviewMap({
+                    layers:[
+                        new ol.layer.Tile({
+                            source: new ol.source.XYZ({
+                                url:"http://rt{0-3}.map.gtimg.com/realtimerender?z={z}&x={x}&y={-y}&type=vector&style=0"
+                            })
+                        })     
+                    ]
+                }),
+                new ol.control.ScaleLine({}),
+                new ol.control.ZoomSlider({}),
+                new ol.control.ZoomToExtent({})
+            ])
+        });
+
+        
+        let controls=document.getElementById('controls');
+        controls.addEventListener('click',(event)=>{
+            if(event.target.checked){
+                switch(event.target.id){
+                    case "XYZ":
+                        map.getLayers().item(0).setVisible(true);  
+                        break;
+                    case "arcgisonline":
+                        map.getLayers().item(1).setVisible(true);
+                        break;
+                    case "Bing":
+                        map.getLayers().item(2).setVisible(true);
+                        break;
+                    default:break;
+                }
+            }else{
+                switch(event.target.id){
+                    case "XYZ":
+                         map.getLayers().item(0).setVisible(false);
+                         break;
+                    case "arcgisonline":
+                        map.getLayers().item(1).setVisible(false);
+                        break;
+                    case "Bing":
+                        map.getLayers().item(2).setVisible(false);
+                        break;
+                    default:break;
+                }
+            }
+        })   
+    </script>    
+</body>
+</html>
