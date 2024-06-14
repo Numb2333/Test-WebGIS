@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Map Add Windfarm</title>
+    <link rel="stylesheet" href="ol/css/ol.css">
+    <style>
+        .map {
+        height: 100vh;
+        width: 100%;
+        }
+    </style>
+    <script src="ol/build/ol.js"></script>
+   
+</head>
+<body>
+    <div id="map" class="map"></div> 
+    <script >
+        let map=new ol.Map({
+            target:'map',
+            layers:[
+                /*new ol.layer.Tile({
+                    source:new ol.source.OSM()
+                }),*/
+                new ol.layer.Tile({
+                    source: new ol.source.BingMaps({
+                        key:'AkjzA7OhS4MIBjutL21bkAop7dc41HSE0CNTR5c6HJy8JKc7U9U9RveWJrylD3XJ',
+                        imagerySet:'Road'
+                    })
+                }),
+                new ol.layer.Vector({
+                    source:new ol.source.Vector({
+                        url:'data/cs珠三角.json',
+                        projection: 'EPSG:3857',
+                        format: new ol.format.GeoJSON()
+                    })
+                })
+            ],
+            view:new ol.View({
+               
+                center: ol.proj.fromLonLat([37.41, 8.82]),
+                zoom: 4
+            })
+         
+        });
+    </script>  
+</body>
+</html>
